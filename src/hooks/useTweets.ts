@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabase } from "./useSupabaseAuth";
+import { useAuth } from "@/context/Auth0Context";
 
 export interface Tweet {
   id: string;
@@ -20,8 +20,10 @@ export function useTweets(campaignId?: string) {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
+  const supabase = useSupabase();
+
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supabase) return;
 
     const fetchTweets = async () => {
       try {
@@ -29,7 +31,7 @@ export function useTweets(campaignId?: string) {
         let query = supabase
           .from("tweets")
           .select("*")
-          .eq("created_by", user.id);
+          .eq("created_by", user.sub);
 
         if (campaignId) {
           query = query.eq("campaign_id", campaignId);
@@ -64,19 +66,19 @@ export function useTweets(campaignId?: string) {
     return () => {
       subscription.unsubscribe();
     };
-  }, [user, campaignId]);
+  }, [user, campaignId, supabase]);
 
   const createTweet = async (
     tweetData: Omit<Tweet, "id" | "created_at" | "updated_at" | "created_by">,
   ) => {
-    if (!user) throw new Error("User not authenticated");
+    if (!user || !supabase) throw new Error("User not authenticated");
 
     try {
       const { data, error } = await supabase
         .from("tweets")
         .insert({
           ...tweetData,
-          created_by: user.id,
+          created_by: user.sub,
         })
         .select()
         .single();
@@ -93,7 +95,7 @@ export function useTweets(campaignId?: string) {
     id: string,
     updates: Partial<Omit<Tweet, "id" | "created_at" | "created_by">>,
   ) => {
-    if (!user) throw new Error("User not authenticated");
+    if (!user || !supabase) throw new Error("User not authenticated");
 
     try {
       const { data, error } = await supabase
@@ -103,7 +105,7 @@ export function useTweets(campaignId?: string) {
           updated_at: new Date().toISOString(),
         })
         .eq("id", id)
-        .eq("created_by", user.id)
+        .eq("created_by", user.sub)
         .select()
         .single();
 
@@ -116,14 +118,14 @@ export function useTweets(campaignId?: string) {
   };
 
   const deleteTweet = async (id: string) => {
-    if (!user) throw new Error("User not authenticated");
+    if (!user || !supabase) throw new Error("User not authenticated");
 
     try {
       const { error } = await supabase
         .from("tweets")
         .delete()
         .eq("id", id)
-        .eq("created_by", user.id);
+        .eq("created_by", user.sub);
 
       if (error) throw error;
       return true;
@@ -134,6 +136,8 @@ export function useTweets(campaignId?: string) {
   };
 
   const getTweet = async (id: string) => {
+    if (!supabase) throw new Error("Supabase client not initialized");
+
     try {
       const { data, error } = await supabase
         .from("tweets")

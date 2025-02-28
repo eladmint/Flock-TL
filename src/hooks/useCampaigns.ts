@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/context/AuthContext";
+import { useSupabase } from "./useSupabaseAuth";
+import { useAuth } from "@/context/Auth0Context";
 
 export interface Campaign {
   id: string;
@@ -21,8 +21,10 @@ export function useCampaigns() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
+  const supabase = useSupabase();
+
   useEffect(() => {
-    if (!user) return;
+    if (!user || !supabase) return;
 
     const fetchCampaigns = async () => {
       try {
@@ -30,7 +32,7 @@ export function useCampaigns() {
         const { data, error } = await supabase
           .from("campaigns")
           .select("*")
-          .eq("created_by", user.id)
+          .eq("created_by", user.sub)
           .order("created_at", { ascending: false });
 
         if (error) throw error;
@@ -58,7 +60,7 @@ export function useCampaigns() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [user]);
+  }, [user, supabase]);
 
   const createCampaign = async (
     campaignData: Omit<
@@ -66,14 +68,14 @@ export function useCampaigns() {
       "id" | "created_at" | "updated_at" | "created_by"
     >,
   ) => {
-    if (!user) throw new Error("User not authenticated");
+    if (!user || !supabase) throw new Error("User not authenticated");
 
     try {
       const { data, error } = await supabase
         .from("campaigns")
         .insert({
           ...campaignData,
-          created_by: user.id,
+          created_by: user.sub,
         })
         .select()
         .single();
@@ -90,7 +92,7 @@ export function useCampaigns() {
     id: string,
     updates: Partial<Omit<Campaign, "id" | "created_at" | "created_by">>,
   ) => {
-    if (!user) throw new Error("User not authenticated");
+    if (!user || !supabase) throw new Error("User not authenticated");
 
     try {
       const { data, error } = await supabase
@@ -100,7 +102,7 @@ export function useCampaigns() {
           updated_at: new Date().toISOString(),
         })
         .eq("id", id)
-        .eq("created_by", user.id)
+        .eq("created_by", user.sub)
         .select()
         .single();
 
@@ -113,14 +115,14 @@ export function useCampaigns() {
   };
 
   const deleteCampaign = async (id: string) => {
-    if (!user) throw new Error("User not authenticated");
+    if (!user || !supabase) throw new Error("User not authenticated");
 
     try {
       const { error } = await supabase
         .from("campaigns")
         .delete()
         .eq("id", id)
-        .eq("created_by", user.id);
+        .eq("created_by", user.sub);
 
       if (error) throw error;
       return true;
@@ -131,6 +133,8 @@ export function useCampaigns() {
   };
 
   const getCampaign = async (id: string) => {
+    if (!supabase) throw new Error("Supabase client not initialized");
+
     try {
       const { data, error } = await supabase
         .from("campaigns")

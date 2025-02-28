@@ -4,6 +4,7 @@ import App from "./App.tsx";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { Auth0ProviderWithHistory } from "./context/Auth0Context";
+import { SupabaseProvider } from "./hooks/useSupabaseAuth";
 
 // Initialize Tempo
 if (import.meta.env.VITE_TEMPO === "true") {
@@ -23,7 +24,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
       <Auth0ProviderWithHistory>
-        <App />
+        <SupabaseProvider>
+          <App />
+        </SupabaseProvider>
       </Auth0ProviderWithHistory>
     </BrowserRouter>
   </React.StrictMode>,
