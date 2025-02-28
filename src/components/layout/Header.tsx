@@ -42,9 +42,9 @@ interface HeaderProps {
 
 const Header = ({
   user = {
-    name: "Jane Smith",
-    email: "jane@example.com",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=jane",
+    name: "Twitter User",
+    email: "user@example.com",
+    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=user",
   },
   onLogout = () => console.log("Logout clicked"),
   notifications = 3,

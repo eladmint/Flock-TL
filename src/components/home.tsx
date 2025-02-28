@@ -25,14 +25,16 @@ const Home: React.FC<HomeProps> = ({
   const navigate = useNavigate();
 
   const isAuthenticated = user !== null || propIsAuthenticated;
-  const userName = user?.user_metadata?.name || propUserName;
+  const userName =
+    user?.user_metadata?.full_name || user?.user_metadata?.name || propUserName;
 
   // Check authentication status
   useEffect(() => {
     if (!authLoading) {
       setLoading(false);
     }
-  }, [authLoading]);
+    console.log("User data:", user);
+  }, [authLoading, user]);
 
   const handleLogout = async () => {
     await signOut();
@@ -72,7 +74,8 @@ const Home: React.FC<HomeProps> = ({
           email:
             user?.email ||
             `${userName.toLowerCase().replace(" ", ".")}@example.com`,
-          avatar: user?.user_metadata?.avatar_url,
+          avatar:
+            user?.user_metadata?.avatar_url || user?.user_metadata?.picture,
         }}
         onLogout={handleLogout}
       />
