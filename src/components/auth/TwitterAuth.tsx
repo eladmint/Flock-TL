@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Twitter } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { Link } from "react-router-dom";
 
 interface TwitterAuthProps {
   onAuthenticate?: () => void;
@@ -65,7 +66,7 @@ const TwitterAuth: React.FC<TwitterAuthProps> = ({
             </div>
           )}
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col space-y-4">
           <Button
             className="w-full flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600"
             onClick={handleAuthenticate}
@@ -83,6 +84,22 @@ const TwitterAuth: React.FC<TwitterAuthProps> = ({
               </>
             )}
           </Button>
+          <div className="text-xs text-center text-gray-500">
+            By connecting, you agree to our{" "}
+            <Link
+              to="/terms-of-service"
+              className="text-blue-500 hover:underline"
+            >
+              Terms of Service
+            </Link>{" "}
+            and{" "}
+            <Link
+              to="/privacy-policy"
+              className="text-blue-500 hover:underline"
+            >
+              Privacy Policy
+            </Link>
+          </div>
         </CardFooter>
       </Card>
     </div>
