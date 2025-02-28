@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StatsOverview from "./StatsOverview";
 import CampaignsList from "../campaigns/CampaignsList";
+import { useCampaigns } from "@/hooks/useCampaigns";
+import { useTweets } from "@/hooks/useTweets";
 
 interface DashboardOverviewProps {
   userName?: string;
@@ -10,15 +12,19 @@ interface DashboardOverviewProps {
 
 const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   userName = "Twitter User",
-  isLoading = false,
+  isLoading: propIsLoading = false,
 }) => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState<"campaigns" | "posts">(
     "campaigns",
   );
 
+  const { campaigns, loading: campaignsLoading } = useCampaigns();
+  const { tweets, loading: tweetsLoading } = useTweets();
+
+  const isLoading = propIsLoading || campaignsLoading || tweetsLoading;
+
   const handleSelectCampaign = (campaignId: string) => {
-    // In a real implementation, this would navigate to the campaign dashboard
     navigate(`/campaigns/${campaignId}`);
   };
 
@@ -59,7 +65,20 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               </div>
             </div>
             {selectedTab === "campaigns" ? (
-              <CampaignsList onSelectCampaign={handleSelectCampaign} />
+              <CampaignsList
+                campaigns={campaigns.map((campaign) => ({
+                  id: campaign.id,
+                  name: campaign.name,
+                  description: campaign.description || "",
+                  startDate: new Date(campaign.start_date),
+                  endDate: new Date(campaign.end_date),
+                  postsCount: tweets.filter(
+                    (t) => t.campaign_id === campaign.id,
+                  ).length,
+                  engagementRate: 0, // This would be calculated from analytics in a real app
+                }))}
+                onSelectCampaign={handleSelectCampaign}
+              />
             ) : null}
           </div>
 
@@ -77,9 +96,29 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </div>
             {selectedTab === "posts" ? (
               <div className="bg-white p-6 rounded-lg shadow-sm">
-                <p className="text-center text-gray-500">
-                  Scheduled posts will appear here
-                </p>
+                {tweets.length > 0 ? (
+                  <div className="space-y-4">
+                    {tweets
+                      .filter((tweet) => tweet.status === "scheduled")
+                      .slice(0, 5)
+                      .map((tweet) => (
+                        <div key={tweet.id} className="p-4 border rounded-lg">
+                          <p className="text-sm">{tweet.content}</p>
+                          <div className="mt-2 text-xs text-gray-500">
+                            Scheduled for:{" "}
+                            {new Date(
+                              tweet.scheduled_for || "",
+                            ).toLocaleString()}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-500">
+                    No scheduled posts yet. Create your first campaign to get
+                    started.
+                  </p>
+                )}
               </div>
             ) : null}
           </div>

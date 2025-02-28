@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { useRoutes, Routes, Route } from "react-router-dom";
 import Home from "./components/home";
 import CampaignDashboard from "./components/campaigns/CampaignDashboard";
+import CampaignForm from "./components/campaigns/CampaignForm";
 import routes from "tempo-routes";
 
 function App() {
@@ -11,6 +12,12 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/campaigns/:id" element={<CampaignDashboard />} />
+          <Route path="/create-campaign" element={<CampaignForm />} />
+          <Route
+            path="/edit-campaign/:id"
+            element={<CampaignForm isEditing={true} />}
+          />
+          <Route path="/callback" element={<Home />} />
           {import.meta.env.VITE_TEMPO === "true" && (
             <Route path="/tempobook/*" />
           )}

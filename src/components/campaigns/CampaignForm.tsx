@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, Info } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -37,6 +38,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useCampaigns } from "@/hooks/useCampaigns";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -58,6 +60,7 @@ interface CampaignFormProps {
   onSubmit?: (data: z.infer<typeof formSchema>) => void;
   onCancel?: () => void;
   isEditing?: boolean;
+  campaignId?: string;
 }
 
 const CampaignForm = ({
@@ -69,17 +72,67 @@ const CampaignForm = ({
     goals: "",
     targetAudience: "",
   },
-  onSubmit = (data) => console.log("Form submitted:", data),
-  onCancel = () => console.log("Form cancelled"),
+  onSubmit,
+  onCancel,
   isEditing = false,
+  campaignId,
 }: CampaignFormProps) => {
+  const { createCampaign, updateCampaign } = useCampaigns();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData,
   });
 
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    onSubmit(data);
+  const handleSubmit = async (data: z.infer<typeof formSchema>) => {
+    try {
+      setIsSubmitting(true);
+
+      if (onSubmit) {
+        onSubmit(data);
+        return;
+      }
+
+      if (isEditing && campaignId) {
+        await updateCampaign(campaignId, {
+          name: data.name,
+          description: data.description || "",
+          start_date: data.startDate.toISOString(),
+          end_date: data.endDate.toISOString(),
+          // Convert form data to hashtags if needed
+          hashtags: data.goals
+            ? data.goals.split(",").map((g) => g.trim())
+            : [],
+        });
+        navigate(`/campaigns/${campaignId}`);
+      } else {
+        const newCampaign = await createCampaign({
+          name: data.name,
+          description: data.description || "",
+          start_date: data.startDate.toISOString(),
+          end_date: data.endDate.toISOString(),
+          status: "active",
+          hashtags: data.goals
+            ? data.goals.split(",").map((g) => g.trim())
+            : [],
+        });
+        navigate(`/campaigns/${newCampaign.id}`);
+      }
+    } catch (error) {
+      console.error("Error saving campaign:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      navigate("/");
+    }
   };
 
   return (
@@ -222,7 +275,7 @@ const CampaignForm = ({
               render={({ field }) => (
                 <FormItem>
                   <div className="flex items-center gap-2">
-                    <FormLabel>Campaign Goals</FormLabel>
+                    <FormLabel>Campaign Goals & Hashtags</FormLabel>
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
@@ -230,7 +283,8 @@ const CampaignForm = ({
                         </TooltipTrigger>
                         <TooltipContent>
                           <p>
-                            Define what you want to achieve with this campaign
+                            Define what you want to achieve with this campaign.
+                            Separate hashtags with commas.
                           </p>
                         </TooltipContent>
                       </Tooltip>
@@ -238,7 +292,7 @@ const CampaignForm = ({
                   </div>
                   <FormControl>
                     <Textarea
-                      placeholder="Increase brand awareness, drive website traffic, etc."
+                      placeholder="Increase brand awareness, drive website traffic, etc. Hashtags: #BrandAwareness, #NewProduct"
                       className="resize-none"
                       {...field}
                     />
@@ -267,11 +321,20 @@ const CampaignForm = ({
             />
 
             <div className="flex justify-end space-x-4">
-              <Button type="button" variant="outline" onClick={onCancel}>
+              <Button type="button" variant="outline" onClick={handleCancel}>
                 Cancel
               </Button>
-              <Button type="submit">
-                {isEditing ? "Update Campaign" : "Create Campaign"}
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <div className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2"></div>
+                    {isEditing ? "Updating..." : "Creating..."}
+                  </>
+                ) : isEditing ? (
+                  "Update Campaign"
+                ) : (
+                  "Create Campaign"
+                )}
               </Button>
             </div>
           </form>

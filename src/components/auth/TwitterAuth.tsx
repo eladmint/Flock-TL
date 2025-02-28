@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Twitter } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 interface TwitterAuthProps {
   onAuthenticate?: () => void;
@@ -17,18 +18,23 @@ interface TwitterAuthProps {
 }
 
 const TwitterAuth: React.FC<TwitterAuthProps> = ({
-  onAuthenticate = () => console.log("Twitter authentication initiated"),
-  isLoading = false,
-  error = null,
+  onAuthenticate,
+  isLoading: propIsLoading = false,
+  error: propError = null,
 }) => {
+  const { signIn, loading: authLoading } = useAuth();
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const isLoading = propIsLoading || authLoading;
+  const error = propError;
 
-  const handleAuthenticate = () => {
+  const handleAuthenticate = async () => {
     setIsAuthenticating(true);
-    onAuthenticate();
-    // In a real implementation, this would redirect to Auth0 for Twitter authentication
-    // For now, we'll just simulate the loading state
-    setTimeout(() => setIsAuthenticating(false), 2000);
+    if (onAuthenticate) {
+      onAuthenticate();
+    } else {
+      await signIn();
+    }
+    setIsAuthenticating(false);
   };
 
   return (

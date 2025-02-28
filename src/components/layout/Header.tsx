@@ -1,11 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Bell,
   ChevronDown,
   HelpCircle,
   LogOut,
   Menu,
+  PlusCircle,
   Settings,
   Twitter,
   User,
@@ -49,13 +50,16 @@ const Header = ({
   notifications = 3,
 }: HeaderProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const navigate = useNavigate();
 
   const navItems = [
     { label: "Dashboard", href: "/" },
     { label: "Campaigns", href: "/campaigns" },
-    { label: "Analytics", href: "/analytics" },
-    { label: "Calendar", href: "/calendar" },
   ];
+
+  const handleCreateCampaign = () => {
+    navigate("/create-campaign");
+  };
 
   return (
     <header className="w-full h-[72px] bg-white border-b border-gray-200 px-4 md:px-6 flex items-center justify-between">
@@ -76,6 +80,14 @@ const Header = ({
               {item.label}
             </Link>
           ))}
+          <Button
+            variant="ghost"
+            className="text-gray-600 hover:text-blue-500 font-medium flex items-center gap-1 px-0"
+            onClick={handleCreateCampaign}
+          >
+            <PlusCircle className="h-4 w-4" />
+            <span>New Campaign</span>
+          </Button>
         </nav>
       </div>
 
@@ -204,6 +216,17 @@ const Header = ({
                   {item.label}
                 </Link>
               ))}
+              <Button
+                variant="ghost"
+                className="justify-start font-medium text-gray-600 hover:text-blue-500 py-2"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleCreateCampaign();
+                }}
+              >
+                <PlusCircle className="mr-2 h-5 w-5" />
+                New Campaign
+              </Button>
               <div className="border-t border-gray-200 pt-4 mt-4">
                 <Button
                   variant="ghost"
@@ -222,7 +245,10 @@ const Header = ({
                 <Button
                   variant="ghost"
                   className="w-full justify-start font-medium text-red-500"
-                  onClick={onLogout}
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onLogout();
+                  }}
                 >
                   <LogOut className="mr-2 h-5 w-5" />
                   Log out

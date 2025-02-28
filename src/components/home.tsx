@@ -4,6 +4,7 @@ import Header from "./layout/Header";
 import TwitterAuth from "./auth/TwitterAuth";
 import DashboardOverview from "./dashboard/DashboardOverview";
 import CampaignDashboard from "./campaigns/CampaignDashboard";
+import { useAuth } from "@/context/AuthContext";
 
 interface HomeProps {
   isAuthenticated?: boolean;
@@ -12,56 +13,41 @@ interface HomeProps {
 }
 
 const Home: React.FC<HomeProps> = ({
-  isAuthenticated = false,
-  userName = "Twitter User",
+  isAuthenticated: propIsAuthenticated = false,
+  userName: propUserName = "Twitter User",
   authError = null,
 }) => {
-  const [authenticated, setAuthenticated] = useState(isAuthenticated);
+  const { user, loading: authLoading, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(
     null,
   );
   const navigate = useNavigate();
 
-  // Simulate checking authentication status
+  const isAuthenticated = user !== null || propIsAuthenticated;
+  const userName = user?.user_metadata?.name || propUserName;
+
+  // Check authentication status
   useEffect(() => {
-    // In a real app, this would check for a valid session
-    const checkAuth = async () => {
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (!authLoading) {
       setLoading(false);
-    };
+    }
+  }, [authLoading]);
 
-    checkAuth();
-  }, []);
-
-  const handleAuthenticate = () => {
-    // In a real app, this would redirect to Auth0 for Twitter authentication
-    setLoading(true);
-    // Simulate authentication process
-    setTimeout(() => {
-      setAuthenticated(true);
-      setLoading(false);
-    }, 1500);
-  };
-
-  const handleLogout = () => {
-    // In a real app, this would clear the session
-    setAuthenticated(false);
+  const handleLogout = async () => {
+    await signOut();
     setSelectedCampaignId(null);
   };
 
   const handleSelectCampaign = (campaignId: string) => {
-    setSelectedCampaignId(campaignId);
-    // In a real app with routing, this would navigate to the campaign page
-    // navigate(`/campaigns/${campaignId}`);
+    navigate(`/campaigns/${campaignId}`);
   };
 
   const handleBackToOverview = () => {
-    setSelectedCampaignId(null);
+    navigate("/");
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="animate-pulse flex flex-col items-center">
@@ -74,10 +60,8 @@ const Home: React.FC<HomeProps> = ({
     );
   }
 
-  if (!authenticated) {
-    return (
-      <TwitterAuth onAuthenticate={handleAuthenticate} error={authError} />
-    );
+  if (!isAuthenticated) {
+    return <TwitterAuth error={authError} />;
   }
 
   return (
@@ -85,7 +69,10 @@ const Home: React.FC<HomeProps> = ({
       <Header
         user={{
           name: userName,
-          email: `${userName.toLowerCase().replace(" ", ".")}@example.com`,
+          email:
+            user?.email ||
+            `${userName.toLowerCase().replace(" ", ".")}@example.com`,
+          avatar: user?.user_metadata?.avatar_url,
         }}
         onLogout={handleLogout}
       />
