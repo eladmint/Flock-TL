@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "twitter",
         options: {
-          redirectTo: window.location.origin + "/callback",
+          redirectTo: "https://flock-tl.vercel.app/auth/callback",
           scopes: "tweet.read tweet.write users.read offline.access",
         },
       });
