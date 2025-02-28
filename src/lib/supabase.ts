@@ -7,5 +7,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
+    storageKey: "flock_auth_token",
   },
 });

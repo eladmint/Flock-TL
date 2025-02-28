@@ -2,5 +2,13 @@
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite"
+  "framework": "vite",
+  "env": {
+    "VITE_SUPABASE_URL": "https://qntplrzasndqpcwqlyde.supabase.co",
+    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFudHBscnphc25kcXBjd3FseWRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkzMDI2MzcsImV4cCI6MjA1NDg3ODYzN30.YKAPc5h1CbSe4HjcAdC9IKa1KMC8tWAKtKJFO8JtKNw",
+    "VITE_AUTH0_DOMAIN": "dev-rr7gb1kntasyvasa.us.auth0.com",
+    "VITE_AUTH0_CLIENT_ID": "1C2m7j2kQBSFWf3Y3AXCQ70wFOdOAIXP",
+    "VITE_AUTH0_CALLBACK_URL": "https://flock-tl.vercel.app/callback",
+    "VITE_TEMPO": "false"
+  }
 }

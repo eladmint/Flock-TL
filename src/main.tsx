@@ -5,8 +5,16 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 
-import { TempoDevtools } from "tempo-devtools";
-TempoDevtools.init();
+// Initialize Tempo only if in Tempo environment
+if (import.meta.env.VITE_TEMPO === "true") {
+  import("tempo-devtools")
+    .then(({ TempoDevtools }) => {
+      TempoDevtools.init();
+    })
+    .catch((err) => {
+      console.error("Failed to load Tempo devtools:", err);
+    });
+}
 
 const basename = import.meta.env.BASE_URL;
 
