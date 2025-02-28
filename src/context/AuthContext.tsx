@@ -46,18 +46,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async () => {
     try {
       setLoading(true);
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "twitter",
         options: {
-          redirectTo:
-            import.meta.env.VITE_AUTH0_CALLBACK_URL ||
-            `${window.location.origin}/callback`,
+          redirectTo: window.location.origin + "/callback",
           scopes: "tweet.read tweet.write users.read offline.access",
         },
       });
+
       if (error) {
         console.error("OAuth error:", error);
         throw error;
+      }
+
+      // Log the auth URL for debugging
+      console.log("Auth URL:", data?.url);
+
+      // Redirect manually if needed
+      if (data?.url) {
+        window.location.href = data.url;
       }
     } catch (error) {
       console.error("Error signing in:", error);

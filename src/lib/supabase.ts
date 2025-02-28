@@ -8,5 +8,6 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     autoRefreshToken: true,
     storageKey: "flock_auth_token",
+    flowType: "pkce",
   },
 });
