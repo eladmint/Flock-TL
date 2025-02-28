@@ -1,57 +1,53 @@
 import path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+// Add this block of code
+const conditionalPlugins = [];
+if (process.env.TEMPO === "true") {
+  conditionalPlugins.push(["tempo-devtools/swc", {}]);
+}
 
-const conditionalPlugins: [string, Record<string, any>][] = [];
-
-// Only include tempo plugins in development with TEMPO=true
-if (process.env.NODE_ENV === "development" && process.env.TEMPO === "true") {
-  try {
-    const { tempo } = require("tempo-devtools/dist/vite");
-    conditionalPlugins.push(["tempo-devtools/swc", {}]);
-    // Add tempo plugin only in development
-    const plugins = [
-      react({
-        plugins: conditionalPlugins,
-      }),
-      tempo(),
-    ];
-  } catch (error) {
-    console.warn("Tempo devtools not available:", error);
+// Import tempo plugin dynamically to avoid ESM/CJS issues
+let tempoPlugin = null;
+try {
+  if (process.env.TEMPO === "true") {
+    tempoPlugin = () => ({
+      name: "tempo-plugin",
+      configureServer(server) {
+        console.log("Tempo plugin initialized");
+      },
+    });
   }
+} catch (error) {
+  console.warn("Tempo plugin initialization error:", error);
 }
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base:
-    process.env.NODE_ENV === "development"
-      ? "/"
-      : process.env.VITE_BASE_PATH || "/",
-  optimizeDeps: {
-    entries: ["src/main.tsx"],
-    exclude: ["tempo-routes", "tempo-devtools"],
-  },
+  base: "/",
   plugins: [
     react({
-      plugins: process.env.NODE_ENV === "development" ? conditionalPlugins : [],
+      plugins: conditionalPlugins,
     }),
-  ],
+    process.env.TEMPO === "true" && tempoPlugin && tempoPlugin(),
+  ].filter(Boolean),
   resolve: {
-    preserveSymlinks: true,
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  optimizeDeps: {
+    exclude: ["tempo-routes", "tempo-devtools"],
+  },
+  build: {
+    outDir: "dist",
+    sourcemap: true,
+    commonjsOptions: {
+      transformMixedEsModules: true,
     },
   },
   server: {
     // @ts-ignore
     allowedHosts: process.env.TEMPO === "true" ? true : undefined,
-  },
-  build: {
-    outDir: "dist",
-    sourcemap: true,
-    rollupOptions: {
-      // Externalize tempo-related packages in production build
-      external: ["tempo-routes", "tempo-devtools"],
-    },
   },
 });

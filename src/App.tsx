@@ -1,26 +1,24 @@
 import { Suspense } from "react";
-import { useRoutes, Routes, Route } from "react-router-dom";
+import { Routes, Route, useRoutes } from "react-router-dom";
 import Home from "./components/home";
 import CampaignDashboard from "./components/campaigns/CampaignDashboard";
 import CampaignForm from "./components/campaigns/CampaignForm";
-
-function App() {
-  // Dynamically import tempo-routes only if in Tempo environment
-  let tempoRoutes = [];
+// Import tempo routes conditionally
+let routes = [];
+if (import.meta.env.VITE_TEMPO === "true") {
   try {
-    if (import.meta.env.VITE_TEMPO === "true") {
-      // This will be handled at build time by Vite
-      const routes = require("tempo-routes").default;
-      tempoRoutes = routes;
-    }
+    // @ts-ignore - This will be handled by the tempo plugin
+    routes = window.__TEMPO_ROUTES__ || [];
   } catch (error) {
     console.error("Failed to load tempo routes:", error);
   }
+}
 
+function App() {
   return (
     <Suspense fallback={<p>Loading...</p>}>
       <>
-        {import.meta.env.VITE_TEMPO === "true" && useRoutes(tempoRoutes)}
+        {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/campaigns/:id" element={<CampaignDashboard />} />

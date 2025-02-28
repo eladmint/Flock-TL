@@ -5,26 +5,23 @@ import "./index.css";
 import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 
-// Initialize Tempo only if in Tempo environment and in development
-if (import.meta.env.DEV && import.meta.env.VITE_TEMPO === "true") {
-  try {
-    import("tempo-devtools")
-      .then(({ TempoDevtools }) => {
-        TempoDevtools.init();
-      })
-      .catch((err) => {
-        console.error("Failed to load Tempo devtools:", err);
-      });
-  } catch (error) {
-    console.warn("Tempo devtools not available", error);
-  }
+// Initialize Tempo
+if (import.meta.env.VITE_TEMPO === "true") {
+  // Using dynamic import for ESM compatibility
+  import("tempo-devtools")
+    .then((module) => {
+      if (module && typeof module.init === "function") {
+        module.init();
+      }
+    })
+    .catch((err) => {
+      console.error("Failed to initialize Tempo:", err);
+    });
 }
-
-const basename = import.meta.env.BASE_URL;
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter basename={basename}>
+    <BrowserRouter>
       <AuthProvider>
         <App />
       </AuthProvider>
