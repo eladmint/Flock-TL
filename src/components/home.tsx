@@ -4,7 +4,7 @@ import Header from "./layout/Header";
 import TwitterAuth from "./auth/TwitterAuth";
 import DashboardOverview from "./dashboard/DashboardOverview";
 import CampaignDashboard from "./campaigns/CampaignDashboard";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/Auth0Context";
 
 interface HomeProps {
   isAuthenticated?: boolean;

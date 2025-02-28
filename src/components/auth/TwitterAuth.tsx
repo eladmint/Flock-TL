@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Twitter } from "lucide-react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/Auth0Context";
 import { Link } from "react-router-dom";
 
 interface TwitterAuthProps {
@@ -33,7 +33,7 @@ const TwitterAuth: React.FC<TwitterAuthProps> = ({
     if (onAuthenticate) {
       onAuthenticate();
     } else {
-      await signIn();
+      signIn();
     }
     setIsAuthenticating(false);
   };

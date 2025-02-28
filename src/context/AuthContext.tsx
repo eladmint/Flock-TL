@@ -50,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         provider: "twitter",
         options: {
           redirectTo: window.location.origin + "/callback",
-          scopes: "tweet.read tweet.write users.read offline.access",
+          skipBrowserRedirect: false,
         },
       });
 

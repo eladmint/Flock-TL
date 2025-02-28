@@ -3,7 +3,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { Auth0ProviderWithHistory } from "./context/Auth0Context";
 
 // Initialize Tempo
 if (import.meta.env.VITE_TEMPO === "true") {
@@ -22,9 +22,9 @@ if (import.meta.env.VITE_TEMPO === "true") {
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <BrowserRouter>
-      <AuthProvider>
+      <Auth0ProviderWithHistory>
         <App />
-      </AuthProvider>
+      </Auth0ProviderWithHistory>
     </BrowserRouter>
   </React.StrictMode>,
 );
