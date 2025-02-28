@@ -3,16 +3,8 @@ import { Routes, Route, useRoutes } from "react-router-dom";
 import Home from "./components/home";
 import CampaignDashboard from "./components/campaigns/CampaignDashboard";
 import CampaignForm from "./components/campaigns/CampaignForm";
-// Import tempo routes conditionally
-let routes = [];
-if (import.meta.env.VITE_TEMPO === "true") {
-  try {
-    // @ts-ignore - This will be handled by the tempo plugin
-    routes = window.__TEMPO_ROUTES__ || [];
-  } catch (error) {
-    console.error("Failed to load tempo routes:", error);
-  }
-}
+// Define empty routes array for Tempo
+const routes = [];
 
 function App() {
   return (

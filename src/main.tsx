@@ -10,8 +10,8 @@ if (import.meta.env.VITE_TEMPO === "true") {
   // Using dynamic import for ESM compatibility
   import("tempo-devtools")
     .then((module) => {
-      if (module && typeof module.init === "function") {
-        module.init();
+      if (module && typeof module.TempoDevtools?.init === "function") {
+        module.TempoDevtools.init();
       }
     })
     .catch((err) => {
